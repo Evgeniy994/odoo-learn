@@ -25,6 +25,7 @@ class EstateProperty(models.Model):
     living_area = fields.Float('Living area(sqm)')
     total_area = fields.Float('Total area(sqm)', compute='_compute_total')
     active = fields.Boolean('Active', default=True)
+    best_offer = fields.Float('Best offer', compute='_compute_best_offer')
     garden_orientation = fields.Selection(
         string='Garden orientation',
         selection=[('north', 'North'), ('south', 'South'), ('east', 'East'), ('west', 'West')],
@@ -39,8 +40,12 @@ class EstateProperty(models.Model):
         default='new',
         help='State field')
 
+    @api.depends('garden_area', 'living_area')
+    def _compute_total(self):
+        for record in self:
+            record.total_area = record.garden_area + record.living_area
 
-@api.depends('garden_area', 'living_area')
-def _compute_total(self):
-    for record in self:
-        record.total_area = record.garden_area + record.living_area
+    @api.depends('offer_ids.price')
+    def _compute_best_offer(self):
+        for record in self:
+            record.best_offer = max(record.mapped('offer_ids.price'))
