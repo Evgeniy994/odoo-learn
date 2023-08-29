@@ -24,8 +24,20 @@ class EstatePropertyOffer(models.Model):
             record.date_deadline = record.create_date + relativedelta(days=record.validity)
 
     def _inverse_date(self):
+        # for record in self:
+        #     deadline = fields.Datetime.to_datetime(record.date_deadline)
+        #     create_date = fields.Datetime.to_datetime(record.create_date)
+        #     if int((deadline - create_date).days / 365) != record.validity:
+        #         record.validity = int((deadline - create_date).days / 365)
+        #
+        # for record in self:
+        #     deadline = fields.Datetime.to_datetime(record.date_deadline)
+        #     create_date = fields.Datetime.to_datetime(record.create_date)
+        #     difference = deadline - create_date
+        #     if difference != record.validity:
+        #         record.validity = difference
+
         for record in self:
             deadline = fields.Datetime.to_datetime(record.date_deadline)
             create_date = fields.Datetime.to_datetime(record.create_date)
-            if int((deadline - create_date).days / 365) != record.validity:
-                record.validity = int((deadline - create_date).days / 365)
+            record.validity = deadline - create_date
