@@ -1,10 +1,12 @@
 from odoo import api, fields, models
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from odoo.exceptions import UserError
 
 
 class EstateProperty(models.Model):
     _name = 'estate.property'
+    _order = 'id desc'
 
     type_id = fields.Many2one('estate.property.type', string='Property Type')
     salesman_id = fields.Many2one('res.partner', string='Salesman')  # How to use original 'salesman' from 'estate.property.type ?
@@ -32,13 +34,28 @@ class EstateProperty(models.Model):
         help="Choose a side")
     state = fields.Selection(
         string='State',
-        selection=[('new', 'New'), ('offer received', 'Offer Received'),
-                   ('offer accepted', 'Offer Accepted'),
-                   ('sold', 'Sold'), ('canceled', 'Canceled')],
+        selection=[('new', 'NEW'), ('offer received', 'OFFER RECEIVED'), ('offer accepted', 'OFFER ACCEPTED'), ('sold', 'SOLD'), ('canceled', 'CANCELED')],
         required=True,
         copy=False,
         default='new',
         help='State field')
+
+    _sql_constraints = [
+        ('check_expected_price', 'check(expected_price > 0)', 'The expected price must be strictly positive.'),
+        ('check_selling_price', 'check(selling_price > 0)', 'The selling price must be positive.'),
+    ]
+
+    def action_estate_property_sold(self):
+        for record in self:
+            if record.state == 'canceled':
+                raise UserError('Canceled property cannot be sold.')
+            record.state = 'sold'
+
+    def action_estate_property_cancel(self):
+        for record in self:
+            if record.state == 'sold':
+                raise UserError('Sold property cannot be canceled.')
+            record.state = 'canceled'
 
     @api.depends('garden_area', 'living_area')
     def _compute_total(self):
@@ -48,4 +65,16 @@ class EstateProperty(models.Model):
     @api.depends('offer_ids.price')
     def _compute_best_offer(self):
         for record in self:
-            record.best_offer = max(record.mapped('offer_ids.price'))
+            if record.offer_ids:
+                record.best_offer = max(record.mapped('offer_ids.price'))
+            else:
+                record.best_offer = 0
+
+    @api.onchange('garden')
+    def _onchange_garden(self):
+        if self.garden:
+            self.garden_area = 10
+            self.garden_orientation = 'south'
+        else:
+            self.garden_area = 0
+            self.garden_orientation = ''

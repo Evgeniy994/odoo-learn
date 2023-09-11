@@ -3,6 +3,8 @@
         <menuitem id="menu_root" name="Estate">
     	    <menuitem id="first_level_menu" name="Advertisements">
 					<menuitem id="estate_property_menu_action" action="estate_property_action" name="Properties"/>
+			</menuitem>
+			<menuitem id="second_level_menu" name="Settings">
 					<menuitem id="estate_property_type_menu_action" action="estate_property_type_action" name="Property types"/>
 					<menuitem id="estate_property_tag_menu_action" action="estate_property_tag_action" name="Property tags"/>
 					<menuitem id="estate_property_offer_menu_action" action="estate_property_offer_action" name="Property offers"/>
