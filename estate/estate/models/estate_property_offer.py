@@ -56,9 +56,9 @@ class EstatePropertyOffer(models.Model):
             raise UserError('You can only accept one offer.')
         else:
             for record in self:
-                    expected_price = record.property_id.expected_price * 0.9
-                    if float_compare(record.price, expected_price, 1) <= 0:
-                        raise ValidationError('The selling price must be more then 90% of expected price! You must reduce the expected price if you want to accept this offer.')
+                expected_price = record.property_id.expected_price * 0.9
+                if float_compare(record.price, expected_price, 1) <= 0:
+                    raise ValidationError('The selling price must be more then 90% of expected price! You must reduce the expected price if you want to accept this offer.')
             self.status = 'accepted'
             self.property_id.selling_price = self.price
             self.property_id.state = 'offer accepted'
